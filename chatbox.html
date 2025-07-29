@@ -9,18 +9,18 @@
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     #chatbox { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
     .msg { margin-bottom: 5px; }
-    .name { font-weight: bold; }
+    .name { font-weight: bold; color: #3a3a3a; }
   </style>
 </head>
 <body>
-  <h2>Live Chat Firebase</h2>
+  <h2>💬 Live Chat Firebase</h2>
   <div id="chatbox"></div>
   <input type="text" id="name" placeholder="Nama" /><br><br>
-  <input type="text" id="message" placeholder="Ketik pesan..." />
+  <input type="text" id="message" placeholder="Tulis pesan..." />
   <button onclick="sendMessage()">Kirim</button>
 
   <script>
-    // Konfigurasi Firebase kamu
+    // Firebase Config kamu
     const firebaseConfig = {
       apiKey: "AIzaSyAgtvEiz03p-bhVSfWbasG7emHo7d0AWdU",
       authDomain: "chatbox-2bec4.firebaseapp.com",
@@ -38,32 +38,31 @@
     const chatbox = document.getElementById("chatbox");
 
     function sendMessage() {
-  const name = document.getElementById("name").value.trim();
-  const message = document.getElementById("message").value.trim();
-  if (name === "" || message === "") {
-    console.log("❌ Nama atau pesan kosong");
-    return;
-  }
+      const name = document.getElementById("name").value.trim();
+      const message = document.getElementById("message").value.trim();
 
-  console.log("📨 Mengirim:", name, message);
+      if (!name || !message) {
+        alert("Nama dan pesan wajib diisi.");
+        return;
+      }
 
-  const msgRef = db.ref("messages").push();
-  msgRef.set({
-    name: name,
-    message: message,
-    timestamp: Date.now()
-  }).then(() => {
-    console.log("✅ Pesan dikirim!");
-  }).catch((error) => {
-    console.error("❌ Gagal kirim pesan:", error);
-  });
+      console.log("📤 Mengirim pesan:", name, message);
 
-  document.getElementById("message").value = "";
-}
+      db.ref("messages").push({
+        name: name,
+        message: message,
+        timestamp: Date.now()
+      }).then(() => {
+        console.log("✅ Pesan berhasil dikirim");
+      }).catch((error) => {
+        console.error("❌ Gagal mengirim pesan:", error);
+      });
 
+      document.getElementById("message").value = "";
+    }
 
-    // Tampilkan pesan secara real-time
-    db.ref("messages").on("child_added", (snapshot) => {
+    // Tampilkan pesan real-time
+    db.ref("messages").on("child_added", function(snapshot) {
       const data = snapshot.val();
       const div = document.createElement("div");
       div.classList.add("msg");
