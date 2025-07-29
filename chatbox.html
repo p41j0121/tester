@@ -38,19 +38,29 @@
     const chatbox = document.getElementById("chatbox");
 
     function sendMessage() {
-      const name = document.getElementById("name").value.trim();
-      const message = document.getElementById("message").value.trim();
-      if (name === "" || message === "") return;
+  const name = document.getElementById("name").value.trim();
+  const message = document.getElementById("message").value.trim();
+  if (name === "" || message === "") {
+    console.log("❌ Nama atau pesan kosong");
+    return;
+  }
 
-      const msgRef = db.ref("messages").push();
-      msgRef.set({
-        name: name,
-        message: message,
-        timestamp: Date.now()
-      });
+  console.log("📨 Mengirim:", name, message);
 
-      document.getElementById("message").value = "";
-    }
+  const msgRef = db.ref("messages").push();
+  msgRef.set({
+    name: name,
+    message: message,
+    timestamp: Date.now()
+  }).then(() => {
+    console.log("✅ Pesan dikirim!");
+  }).catch((error) => {
+    console.error("❌ Gagal kirim pesan:", error);
+  });
+
+  document.getElementById("message").value = "";
+}
+
 
     // Tampilkan pesan secara real-time
     db.ref("messages").on("child_added", (snapshot) => {
