@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Curhat + Gambar</title>
+</head>
+<body>
+  <h2>Kirim Pesan</h2>
+  <input type="text" id="name" placeholder="Nama"><br><br>
+  <textarea id="message" placeholder="Pesan..."></textarea><br><br>
+  <input type="file" id="file"><br><br>
+  <button onclick="kirimPesan()">Kirim</button>
+
+  <p id="status"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = 'https://pysxobhecdpvyryykogq.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // ganti dengan key asli kamu
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function kirimPesan() {
+      const name = document.getElementById('name').value;
+      const message = document.getElementById('message').value;
+      const fileInput = document.getElementById('file');
+      const file = fileInput.files[0];
+      const status = document.getElementById('status');
+
+      status.innerText = "Mengirim...";
+
+      let imageUrl = null;
+
+      // Upload gambar ke storage
+      if (file) {
+        const fileName = Date.now() + "_" + file.name;
+
+        const { data, error } = await supabase.storage
+          .from('chatgambar')
+          .upload(fileName, file);
+
+        if (error) {
+          status.innerText = "Gagal upload gambar: " + error.message;
+          return;
+        }
+
+        const { data: publicData } = supabase
+          .storage
+          .from('chatgambar')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicData.publicUrl;
+      }
+
+      // Simpan ke database
+      const { error: insertError } = await supabase
+        .from('message')
+        .insert([{ name, message, image_url: imageUrl }]);
+
+      if (insertError) {
+        status.innerText = "Gagal kirim pesan: " + insertError.message;
+      } else {
+        status.innerText = "Pesan berhasil dikirim!";
+        fileInput.value = '';
+        document.getElementById('message').value = '';
+        document.getElementById('name').value = '';
+      }
+    }
+  </script>
+</body>
+</html>
